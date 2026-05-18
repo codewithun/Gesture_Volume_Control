@@ -240,6 +240,9 @@ def main():
             print("Kamera gagal dibuka")
             break
 
+        # Flip kamera agar tidak mirror
+        img = cv2.flip(img, 1)
+
         # Deteksi tangan
         img = detector.findHands(img)
 
@@ -289,9 +292,14 @@ def main():
                 if not fingers[4]:
 
                     # Set volume MacOS
-                    os.system(
-                        f"osascript -e 'set volume output volume {int(volPer)}'"
-                    )
+                    # Konversi 0-100 ke skala 0-7 untuk macOS
+                    mac_volume = int(volPer / 100 * 7)
+                    
+                    try:
+                        os.system(f"osascript -e 'set volume {mac_volume}'")
+                        print(f"Volume set to: {int(volPer)}% (Mac level: {mac_volume})")
+                    except Exception as e:
+                        print(f"Error setting volume: {e}")
 
                     # Lingkaran hijau
                     cv2.circle(
@@ -354,6 +362,17 @@ def main():
             1,
             (255, 0, 0),
             3
+        )
+        
+        # Debug info
+        cv2.putText(
+            img,
+            f'Gesture Active: {len(lmList) != 0 and not detector.fingersUp()[4]}',
+            (40, 120),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (0, 255, 255),
+            2
         )
 
         # ==============================================
